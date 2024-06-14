@@ -1,3 +1,7 @@
 TOTP/CSharp/.vs/
-TOTP/CSharp/TOTP/bin/
-TOTP/CSharp/TOTP/obj/
+TOTP/CSharp/TOTPSharp/bin/
+TOTP/CSharp/TOTPSharp/obj/
+TOTP/CSharp/TOTPSharpCLI/bin/
+TOTP/CSharp/TOTPSharpCLI/obj/
+TOTP/CSharp/TOTPSharp_Tests/bin/
+TOTP/CSharp/TOTPSharp_Tests/obj/

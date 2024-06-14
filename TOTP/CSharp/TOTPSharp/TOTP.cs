@@ -1,6 +1,27 @@
-﻿
+﻿/*
+ * Copyright (c) 2024 GraphDefined GmbH <achim.friedland@graphdefined.com>
+ * This file is part of DynamicQRCodes <https://github.com/OpenChargingCloud/DynamicQRCodes>
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+#region Usings
+
 using System.Text;
+using System.Diagnostics;
 using System.Security.Cryptography;
+
+#endregion
 
 namespace cloud.charging.open.utils.QRCodes.TOTP
 {
@@ -16,20 +37,24 @@ namespace cloud.charging.open.utils.QRCodes.TOTP
     public class QRCodeTOTPGenerator
     {
 
-        private static String CalcTOTPSlot(Byte[]      SlotBytes,
-                                           Byte        TOTPLength,
+        #region (private) CalcTOTPSlot(CurrentSlot, TOTPLength, Alphabet, HMAC)
+
+        private static String CalcTOTPSlot(UInt64      CurrentSlot,
+                                           UInt32      TOTPLength,
                                            String      Alphabet,
-                                           HMACSHA256  hmac)
+                                           HMACSHA256  HMAC)
         {
+
+            var slotBytes = BitConverter.GetBytes(CurrentSlot);
 
             // .NET uses little-endian byte order!
             if (BitConverter.IsLittleEndian)
-                Array.Reverse(SlotBytes);
+                Array.Reverse(slotBytes);
 
-            Console.WriteLine(String.Join("-", SlotBytes.Select(b => b.ToString())));
+            Debug.Write($"Current slot bytes: {String.Join("-", slotBytes.Select(b => b.ToString()))}");
 
-            var currentHash    = hmac.ComputeHash(SlotBytes);
-            var stringBuilder  = new StringBuilder(TOTPLength);
+            var currentHash    = HMAC.ComputeHash(slotBytes);
+            var stringBuilder  = new StringBuilder((Int32) TOTPLength);
 
             // For additional security start at a random offset
             // based on the last bit of the hash value (see RFCs)
@@ -42,6 +67,44 @@ namespace cloud.charging.open.utils.QRCodes.TOTP
 
         }
 
+        #endregion
+
+
+        #region GenerateTOTPs(Timestamp, SharedSecret, ValidityTime = null, TOTPLength = 12, Alphabet = null)
+
+        /// <summary>
+        /// Calculate TOTP and the remaining time until the TOTP will change.
+        /// </summary>
+        /// <param name="Timestamp"></param>
+        /// <param name="SharedSecret"></param>
+        /// <param name="ValidityTime"></param>
+        /// <param name="TOTPLength"></param>
+        /// <param name="Alphabet"></param>
+        /// <returns>The TOTP and the remaining time until the TOTP will change.</returns>
+        /// <exception cref="ArgumentNullException"></exception>
+        /// <exception cref="ArgumentException"></exception>
+        public static (String    Previous,
+                       String    Current,
+                       String    Next,
+                       TimeSpan  RemainingTime)
+
+            GenerateTOTPs(DateTime   Timestamp,
+                          String     SharedSecret,
+                          TimeSpan?  ValidityTime   = null,
+                          UInt32     TOTPLength     = 12,
+                          String?    Alphabet       = null)
+
+                => GenerateTOTPs(
+                       SharedSecret,
+                       ValidityTime,
+                       TOTPLength,
+                       Alphabet,
+                       new DateTimeOffset(Timestamp)
+                   );
+
+        #endregion
+
+        #region GenerateTOTPs(SharedSecret, ValidityTime = null, TOTPLength = 12, Alphabet = null, Timestamp = null)
 
         /// <summary>
         /// Calculate TOTP and the remaining time until the TOTP will change.
@@ -54,16 +117,16 @@ namespace cloud.charging.open.utils.QRCodes.TOTP
         /// <returns>The TOTP and the remaining time until the TOTP will change.</returns>
         /// <exception cref="ArgumentNullException"></exception>
         /// <exception cref="ArgumentException"></exception>
-        public static (String    PreviousTOTP,
-                       String    CurrentTOTP,
-                       String    NextTOTP,
+        public static (String    Previous,
+                       String    Current,
+                       String    Next,
                        TimeSpan  RemainingTime)
 
-            GenerateTOTPs(String     SharedSecret,
-                          TimeSpan?  ValidityTime   = null,
-                          Byte       TOTPLength     = 12,
-                          String?    Alphabet       = null,
-                          DateTime?  Timestamp      = null)
+            GenerateTOTPs(String           SharedSecret,
+                          TimeSpan?        ValidityTime   = null,
+                          UInt32           TOTPLength     = 12,
+                          String?          Alphabet       = null,
+                          DateTimeOffset?  Timestamp      = null)
 
         {
 
@@ -110,9 +173,7 @@ namespace cloud.charging.open.utils.QRCodes.TOTP
 
             using var hmac       = new HMACSHA256(Encoding.UTF8.GetBytes(SharedSecret));
 
-            var currentUnixTime  = (Timestamp.HasValue
-                                        ? new DateTimeOffset(Timestamp.Value)
-                                        : DateTimeOffset.UtcNow).ToUnixTimeSeconds();
+            var currentUnixTime  = (Timestamp ?? DateTimeOffset.UtcNow).ToUnixTimeSeconds();
             var currentSlot      = (UInt64) (currentUnixTime / ValidityTime.Value.TotalSeconds);
             var remainingTime    = TimeSpan.FromSeconds(
                                        (Int32) ValidityTime.Value.TotalSeconds
@@ -120,9 +181,11 @@ namespace cloud.charging.open.utils.QRCodes.TOTP
                                        (currentUnixTime % (Int32) ValidityTime.Value.TotalSeconds)
                                    );
 
-            var previousTOTP     = CalcTOTPSlot(BitConverter.GetBytes(currentSlot - 1), TOTPLength, Alphabet, hmac);
-            var currentTOTP      = CalcTOTPSlot(BitConverter.GetBytes(currentSlot),     TOTPLength, Alphabet, hmac);
-            var nextTOTP         = CalcTOTPSlot(BitConverter.GetBytes(currentSlot + 1), TOTPLength, Alphabet, hmac);
+            Debug.Write($"Current slot: {currentSlot}");
+
+            var previousTOTP     = CalcTOTPSlot(currentSlot - 1, TOTPLength, Alphabet, hmac);
+            var currentTOTP      = CalcTOTPSlot(currentSlot,     TOTPLength, Alphabet, hmac);
+            var nextTOTP         = CalcTOTPSlot(currentSlot + 1, TOTPLength, Alphabet, hmac);
 
             return (previousTOTP,
                     currentTOTP,
@@ -131,15 +194,7 @@ namespace cloud.charging.open.utils.QRCodes.TOTP
 
         }
 
-        public static void Main(String[] Arguments)
-        {
-
-            Console.WriteLine($"Generated TOTP: {GenerateTOTPs(SharedSecret: "secure!Charging!")}");
-            Console.WriteLine($"Generated TOTP: {GenerateTOTPs(SharedSecret: "secure!Charging!", Alphabet:     "0123456789")}");
-            Console.WriteLine($"Generated TOTP: {GenerateTOTPs(SharedSecret: "secure!Charging!", TOTPLength:    32)}");
-            Console.WriteLine($"Generated TOTP: {GenerateTOTPs(SharedSecret: "secure!Charging!", ValidityTime:  TimeSpan.FromMinutes(1))}");
-
-        }
+        #endregion
 
     }
 
