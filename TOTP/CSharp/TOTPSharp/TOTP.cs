@@ -34,7 +34,7 @@ namespace cloud.charging.open.utils.QRCodes.TOTP
     /// 
     /// Standard TOTP uses digits only: "0123456789"
     /// </summary>
-    public class QRCodeTOTPGenerator
+    public static class QRCodeTOTPGenerator
     {
 
         #region (private) CalcTOTPSlot(CurrentSlot, TOTPLength, Alphabet, HMAC)
@@ -142,7 +142,7 @@ namespace cloud.charging.open.utils.QRCodes.TOTP
                                                 "The given shared secret must not be null or empty!");
 
             if (SharedSecret.Any(Char.IsWhiteSpace))
-                throw new ArgumentException    ("The given shared secret must not contain any whitespace character!",
+                throw new ArgumentException    ("The given shared secret must not contain any whitespace characters!",
                                                 nameof(Alphabet));
 
             if (SharedSecret.Length < 16)
@@ -166,7 +166,7 @@ namespace cloud.charging.open.utils.QRCodes.TOTP
                                                 nameof(Alphabet));
 
             if (Alphabet.Any(Char.IsWhiteSpace))
-                throw new ArgumentException    ("The given alphabet must not contain any whitespace character!",
+                throw new ArgumentException    ("The given alphabet must not contain any whitespace characters!",
                                                 nameof(Alphabet));
 
             #endregion

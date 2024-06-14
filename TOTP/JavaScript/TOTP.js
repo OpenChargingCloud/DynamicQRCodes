@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-const crypto = require('crypto');
+import crypto from 'crypto';
 
 function isLittleEndian() {
     const buf = Buffer.alloc(4);
@@ -41,7 +41,7 @@ function calcTOTPSlot(slotBytes, TOTPLength, alphabet, sharedSecret) {
     if (!isLittleEndian())
         reverseBytes(slotBytes);
 
-    console.log(`Slot bytes: ${bytesToString(slotBytes)}`);
+    //console.log(`Slot bytes: ${bytesToString(slotBytes)}`);
 
     const hmac        = crypto.createHmac('sha256', Buffer.from(sharedSecret, 'utf-8'));
     const currentHash = hmac.update(slotBytes).digest();
@@ -55,24 +55,32 @@ function calcTOTPSlot(slotBytes, TOTPLength, alphabet, sharedSecret) {
 
 }
 
+export function generateTOTPs(SharedSecret,
+                              ValidityTime  = null,
+                              TOTPLength    = null,
+                              Alphabet      = null,
+                              Timestamp     = null) {
 
-function generateTOTPs(sharedSecret, validityTime = 30, TOTPLength = 12, alphabet = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ') {
+    if (!ValidityTime) ValidityTime  = 30;
+    if (!TOTPLength)   TOTPLength    = 12;
+    if (!Alphabet)     Alphabet      = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+    if (!Timestamp)    Timestamp     = Date.now();
 
-    sharedSecret = sharedSecret.trim();
-    alphabet     = alphabet.trim();
+    SharedSecret = SharedSecret?.trim();
+    Alphabet     = Alphabet?.    trim();
 
-    if (!sharedSecret)                              throw new Error("The given shared secret must not be null or empty!");
-    if (/\s/.test(sharedSecret))                    throw new Error("The given shared secret must not contain any whitespace character!");
-    if (sharedSecret.length < 16)                   throw new Error("The length of the given shared secret must be at least 16 characters!");
+    if (!SharedSecret)                              throw new Error("The given shared secret must not be null or empty!");
+    if (/\s/.test(SharedSecret))                    throw new Error("The given shared secret must not contain any whitespace characters!");
+    if (SharedSecret.length < 16)                   throw new Error("The length of the given shared secret must be at least 16 characters!");
     if (TOTPLength < 4)                             throw new Error("The expected length of the TOTP must be between 4 and 255 characters!");
-    if (!alphabet)                                  throw new Error("The given alphabet must not be null or empty!");
-    if (alphabet.length < 4)                        throw new Error("The given alphabet must contain at least 4 characters!");
-    if (new Set(alphabet).size !== alphabet.length) throw new Error("The given alphabet must not contain duplicate characters!");
-    if (/\s/.test(alphabet))                        throw new Error("The given alphabet must not contain any whitespace character!");
+    if (!Alphabet)                                  throw new Error("The given alphabet must not be null or empty!");
+    if (Alphabet.length < 4)                        throw new Error("The given alphabet must contain at least 4 characters!");
+    if (new Set(Alphabet).size !== Alphabet.length) throw new Error("The given alphabet must not contain duplicate characters!");
+    if (/\s/.test(Alphabet))                        throw new Error("The given alphabet must not contain any whitespace characters!");
 
-    const currentUnixTime    = Math.floor(Date.now() / 1000);
-    const currentSlot        = BigInt(Math.floor(currentUnixTime / validityTime));
-    const remainingTime      = validityTime - (currentUnixTime % validityTime);
+    const currentUnixTime    = Math.floor(Timestamp / 1000);
+    const currentSlot        = BigInt(Math.floor(currentUnixTime / ValidityTime));
+    const remainingTime      = ValidityTime - (currentUnixTime % ValidityTime);
 
     // For interoperability we use 8 byte timestamps
     const previousSlotBytes  = Buffer.alloc(8);
@@ -83,19 +91,19 @@ function generateTOTPs(sharedSecret, validityTime = 30, TOTPLength = 12, alphabe
     currentSlotBytes. writeBigUInt64BE(currentSlot);
     nextSlotBytes.    writeBigUInt64BE(currentSlot + BigInt(1));
 
-    const previousTOTP       = calcTOTPSlot(previousSlotBytes, TOTPLength, alphabet, sharedSecret);
-    const currentTOTP        = calcTOTPSlot(currentSlotBytes,  TOTPLength, alphabet, sharedSecret);
-    const nextTOTP           = calcTOTPSlot(nextSlotBytes,     TOTPLength, alphabet, sharedSecret);
+    const previous           = calcTOTPSlot(previousSlotBytes, TOTPLength, Alphabet, SharedSecret);
+    const current            = calcTOTPSlot(currentSlotBytes,  TOTPLength, Alphabet, SharedSecret);
+    const next               = calcTOTPSlot(nextSlotBytes,     TOTPLength, Alphabet, SharedSecret);
 
     return {
-        previousTOTP,
-        currentTOTP,
-        nextTOTP,
-        remainingTime: remainingTime * 1000 // Convert to milliseconds
+        previous,
+        current,
+        next,
+        remainingTime
     };
 
 }
 
 // Example usage
-const { previousTOTP, currentTOTP, nextTOTP, remainingTime } = generateTOTPs('secure!Charging!');
-console.log(`Generated TOTP: (${previousTOTP}, ${currentTOTP}, ${nextTOTP}, ${remainingTime} milliseconds)`);
+//const { previousTOTP, currentTOTP, nextTOTP, remainingTime } = generateTOTPs('secure!Charging!');
+//console.log(`Generated TOTP: (${previousTOTP}, ${currentTOTP}, ${nextTOTP}, ${remainingTime} milliseconds)`);

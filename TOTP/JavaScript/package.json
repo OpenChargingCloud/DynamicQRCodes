@@ -1,0 +1,32 @@
+{
+  "name": "DynamicQRCodesTOTP",
+  "type": "module",
+  "version": "0.1.0",
+  "description": "A Dynamic QR-Codes TOTP generation library with tests.",
+  "main": "totp.js",
+  "scripts": {
+    "test": "mocha"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/OpenChargingCloud/DynamicQRCodes.git"
+  },
+  "keywords": [
+    "DynamicQRCodes",
+    "QRCode",
+    "OCPP",
+    "TOTP",
+    "AFIR",
+    "EMobility"
+  ],
+  "author": "Achim Friedland <achim.friedland@graphdefined.com>",
+  "license": "MIT OR Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/OpenChargingCloud/DynamicQRCodes/issues"
+  },
+  "homepage": "https://github.com/OpenChargingCloud/DynamicQRCodes",
+  "devDependencies": {
+    "chai": "^5.1.1",
+    "mocha": "^10.4.0"
+  }
+}
