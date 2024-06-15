@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TOTP Generator</title>
+</head>
+<body>
+    <h1>TOTP Generator</h1>
+    <form id="totpForm">
+        <label for="sharedSecret">Shared Secret:</label>
+        <input type="text" id="sharedSecret" name="sharedSecret" required><br><br>
+
+        <label for="validityTime">Validity Time (seconds):</label>
+        <input type="number" id="validityTime" name="validityTime" value="30"><br><br>
+
+        <label for="totpLength">TOTP Length:</label>
+        <input type="number" id="totpLength" name="totpLength" value="12"><br><br>
+
+        <label for="alphabet">Alphabet:</label>
+        <input type="text" id="alphabet" name="alphabet" value="0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"><br><br>
+
+        <label for="timestamp">Timestamp (optional, milliseconds):</label>
+        <input type="number" id="timestamp" name="timestamp"><br><br>
+
+        <button type="submit">Generate TOTP</button>
+    </form>
+
+    <h2>Generated TOTP</h2>
+    <pre id="totpResult"></pre>
+
+    <script type="module" src="./script.js"></script>
+</body>
+</html>
