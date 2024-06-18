@@ -3,29 +3,23 @@
 This project provides reference implementations for generating **Dynamic QR-Codes**
 for secure payments at charging stations under the *EU Alternative Fuels Infrastructure
 Regulation (AFIR)*. This approach will also be part of the upcoming *Open Charge Point
-Protocol (OCPP) v2.1*.
+Protocol (OCPP) v2.1*. Members of the *Open Charge Alliance* can already review the
+adoption of this proposal in *OCPP v2.1 Draft3 v0.53*.
 
 
 ## Goals
 
-- Provide a reference implementation
-- Provide an extensive set of test-cases to ensure correctness.
-- Collect feedback from the community
-
-  We aim to have as many parties as possible agree that this reference
-  implementation is a correct interpretation of the Dynamic QR-Codes OCPP v2.1
+- We aim to have as many parties as possible agree that these reference
+  implementations are correct interpretations of the Dynamic QR-Codes OCPP v2.1
   specification and intentions.
-
-  We welcome community contributions to this project. We aim to make it easy for
-  people, familiar with OCPP, to provide new test cases.
-
+- Provide a collection reference implementations in different programming languages.
+- Provide an extensive set of test-cases to ensure correctness.
 - Provide the software as *Free Open Source* so others can freely use, test and
-  extend it.
-
-- Expose the software functionality [online](https://tools.tandemdrive.com/)
-  to make it even easier for people to do calculations with the tariff
-  software.
-
+  extend it. We aim to make it as easy as possible for people, familiar with OCPP,
+  to provide new and extended test cases.
+- Collect feedback from the community.
+- Expose the software functionality [online](https://open.charging.cloud)
+  to make it even easier for people to test their implementations.
 
 
 ## Contributing
