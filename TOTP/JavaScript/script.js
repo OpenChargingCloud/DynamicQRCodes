@@ -9,7 +9,9 @@ document.getElementById('totpForm').addEventListener('submit', async function(ev
     const alphabet = document.getElementById('alphabet').value;
     const timestamp = document.getElementById('timestamp').value;
 
-    try {
+    try
+    {
+
         const result = generateTOTPs(
             sharedSecret,
             validityTime ? parseInt(validityTime) : undefined,
@@ -19,7 +21,9 @@ document.getElementById('totpForm').addEventListener('submit', async function(ev
         );
 
         document.getElementById('totpResult').textContent = JSON.stringify(result, null, 2);
+
     } catch (error) {
         document.getElementById('totpResult').textContent = `Error: ${error.message}`;
     }
+
 });

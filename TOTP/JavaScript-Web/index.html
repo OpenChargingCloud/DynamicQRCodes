@@ -3,33 +3,133 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TOTP Generator</title>
+    <title>Dynamic QR-Code Generator</title>
+    <style>
+        body {
+
+            font-family: Arial, sans-serif;
+            margin: 0;
+
+            #box {
+
+                margin:             1vh 2vw;
+
+                #parameters {
+
+                    display:            table;
+                    /* margin:             0 auto;
+                    width:              50%; */
+
+                    .parameter {
+
+                        display:            table-row;
+
+                        .key {
+                            display:            table-cell;
+                            padding-right:      1vw;
+                        }
+
+                        .value {
+
+                            display:            table-cell;
+                            width:              30vw;
+
+                            input {
+                                width:              100%;
+                            }
+
+                        }
+
+                    }
+
+                }
+
+            }
+
+        }
+    </style>
 </head>
 
 <body>
 
-    <h1>TOTP Generator</h1>
+    <h1>Dynamic QR-Code Generator</h1>
 
     <label for="startupTests">Startup Tests: </label><div id="testResults" style="display: inline-block">?</div><br><br>
 
     <form id="totpForm">
 
-        <label for="timestamp">Timestamp: </label>
-        <input type="datetime-local" id="timestamp" name="timestamp" step="1"><br><br>
+        <div id="box">
 
-        <label for="sharedSecret">Shared Secret: </label>
-        <input type="text" id="sharedSecret" name="sharedSecret" required><br><br>
+            <div id="parameters">
 
-        <label for="validityTime">Validity Time (seconds, optional): </label>
-        <input type="number" id="validityTime" name="validityTime" value="30"><br><br>
+                <div class="parameter">
+                    <div class="key">
+                        <label for="timestamp">Timestamp: </label>
+                    </div>
+                    <div class="value">
+                        <input type="datetime-local" id="timestamp" name="timestamp" step="1">
+                    </div>
+                </div>
 
-        <label for="totpLength">TOTP Length (optional): </label>
-        <input type="number" id="totpLength" name="totpLength" value="12"><br><br>
+                <div class="parameter">
+                    <div class="key">
+                        <label for="urlTemplate">URL template: </label>
+                    </div>
+                    <div class="value">
+                        <input type="text" id="urlTemplate" name="urlTemplate" required value ="https://open.charging.cloud/{evseId}/{totp}/?v={version}">
+                    </div>
+                </div>
 
-        <label for="alphabet">Alphabet (optional): </label>
-        <input type="text" id="alphabet" name="alphabet" value="0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"><br><br>
+                <div class="parameter">
+                    <div class="key">
+                        <label for="evseId">EVSE Id: </label>
+                    </div>
+                    <div class="value">
+                        <input type="text" id="evseId" name="evseId" required value ="DE*GEF*E1234*5678*1">
+                    </div>
+                </div>
 
-        <button type="submit">Generate TOTP</button>
+                <div class="parameter">
+                    <div class="key">
+                        <label for="sharedSecret">Shared Secret: </label>
+                    </div>
+                    <div class="value">
+                        <input type="text" id="sharedSecret" name="sharedSecret" required>
+                    </div>
+                </div>
+
+                <div class="parameter">
+                    <div class="key">
+                        <label for="validityTime">Validity Time (seconds, optional): </label>
+                    </div>
+                    <div class="value">
+                        <input type="number" id="validityTime" name="validityTime" value="30">
+                    </div>
+                </div>
+
+                <div class="parameter">
+                    <div class="key">
+                        <label for="totpLength">TOTP Length (optional): </label>
+                    </div>
+                    <div class="value">
+                        <input type="number" id="totpLength" name="totpLength" value="12">
+                    </div>
+                </div>
+
+                <div class="parameter">
+                    <div class="key">
+                        <label for="alphabet">Alphabet (optional): </label>
+                    </div>
+                    <div class="value">
+                        <input type="text" id="alphabet" name="alphabet" value="0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ">
+                    </div>
+                </div>
+
+            </div>
+
+            <button type="submit">Generate TOTP</button>
+
+        </div>
 
     </form>
 
@@ -38,7 +138,11 @@
     <h2>Results:</h2>
     <pre id="totpResult"></pre>
 
-    <script type="text/javascript" src="./crypto-js.min.js"></script>
+    <br>
+
+    <div id="qrCode"></div>
+    <a id="qrCodeURL" href="" target="_blank"></a>
+
     <script type="text/javascript" src="QRCodeSVG/qrcode.min.js"></script>
     <script type="module"          src="./script.js"></script>
 

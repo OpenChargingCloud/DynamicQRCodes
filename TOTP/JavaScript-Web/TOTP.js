@@ -44,17 +44,31 @@ function bytesToString(bytes) {
     return Array.from(bytes).map(byte => byte.toString()).join('-');
 }
 
-function calcTOTPSlot(slotBytes, TOTPLength, alphabet, sharedSecret) {
+async function calcTOTPSlot(slotBytes,
+                            TOTPLength,
+                            alphabet,
+                            sharedSecret) {
 
     // JavaScript's Buffer methods default to big-endian!
     if (!isLittleEndian())
         reverseBytes(slotBytes);
 
-    //console.log(`Slot bytes: ${bytesToString(slotBytes)}`);
+    const hash = await crypto.subtle.sign(
+        "HMAC",
+        await crypto.subtle.importKey(
+            "raw",
+            new TextEncoder().encode(sharedSecret),
+            {
+                name: "HMAC",
+                hash: "SHA-256"
+            },
+            false,
+            ["sign", "verify"]
+        ),
+        slotBytes
+    );
 
-    const hmac        = CryptoJS.HmacSHA256(CryptoJS.lib.WordArray.create(slotBytes), sharedSecret);
-    const currentHash = hexStringToByteArray(hmac.toString());
-    //const offset      = currentHash[currentHash.length - 1] & 0x0F;
+    const currentHash = new Uint8Array(hash);
     const offset      = currentHash[currentHash.length - 1] & 0x0F;
 
     let result = '';
@@ -65,11 +79,11 @@ function calcTOTPSlot(slotBytes, TOTPLength, alphabet, sharedSecret) {
 
 }
 
-export function generateTOTPs(SharedSecret,
-                              ValidityTime  = null,
-                              TOTPLength    = null,
-                              Alphabet      = null,
-                              Timestamp     = null) {
+export async function generateTOTPs(SharedSecret,
+                                    ValidityTime  = null,
+                                    TOTPLength    = null,
+                                    Alphabet      = null,
+                                    Timestamp     = null) {
 
     if (!ValidityTime) ValidityTime  = 30;
     if (!TOTPLength)   TOTPLength    = 12;
@@ -88,7 +102,15 @@ export function generateTOTPs(SharedSecret,
     if (new Set(Alphabet).size !== Alphabet.length) throw new Error("The given alphabet must not contain duplicate characters!");
     if (/\s/.test(Alphabet))                        throw new Error("The given alphabet must not contain any whitespace characters!");
 
-    const currentUnixTime    = Math.floor(Timestamp / 1000);
+    var  currentUnixTime     = 0;
+
+    if (typeof Timestamp === 'string')
+        currentUnixTime = Math.floor(new Date(Timestamp).getTime() / 1000) - new Date().getTimezoneOffset() * 60;
+    else if (typeof Timestamp === 'number')
+        currentUnixTime = Timestamp;
+    else
+        throw new Error('Invalid timestamp format');
+
     const currentSlot        = BigInt(Math.floor(currentUnixTime / ValidityTime));
     const remainingTime      = ValidityTime - (currentUnixTime % ValidityTime);
 
@@ -101,9 +123,9 @@ export function generateTOTPs(SharedSecret,
     new DataView(currentSlotBytes.buffer). setBigUint64(0, currentSlot);
     new DataView(nextSlotBytes.buffer).    setBigUint64(0, currentSlot + BigInt(1));
 
-    const previous           = calcTOTPSlot(previousSlotBytes, TOTPLength, Alphabet, SharedSecret);
-    const current            = calcTOTPSlot(currentSlotBytes,  TOTPLength, Alphabet, SharedSecret);
-    const next               = calcTOTPSlot(nextSlotBytes,     TOTPLength, Alphabet, SharedSecret);
+    const previous           = await calcTOTPSlot(previousSlotBytes, TOTPLength, Alphabet, SharedSecret);
+    const current            = await calcTOTPSlot(currentSlotBytes,  TOTPLength, Alphabet, SharedSecret);
+    const next               = await calcTOTPSlot(nextSlotBytes,     TOTPLength, Alphabet, SharedSecret);
 
     return {
         previous,
