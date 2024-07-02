@@ -18,7 +18,7 @@ adoption of this proposal in *OCPP v2.1 Draft3 v0.53*.
   extend it. We aim to make it as easy as possible for people, familiar with OCPP,
   to provide new and extended test cases.
 - Collect feedback from the community.
-- Expose the software functionality [online](https://open.charging.cloud)
+- Expose the software functionality [online](https://tools.charging.cloud/QRCodes)
   to make it even easier for people to test their implementations.
 
 
