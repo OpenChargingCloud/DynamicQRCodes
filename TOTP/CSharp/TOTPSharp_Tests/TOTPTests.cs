@@ -18,6 +18,7 @@
 #region Usings
 
 using NUnit.Framework;
+
 using QRCode = cloud.charging.open.utils.QRCodes.TOTP.QRCodeTOTPGenerator;
 
 #endregion
