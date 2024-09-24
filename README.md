@@ -5,7 +5,7 @@ for secure payments at charging stations under the *EU Alternative Fuels Infrast
 Regulation (AFIR)*. This approach will also be part of the upcoming *Open Charge Point
 Protocol (OCPP) v2.1*. Members of the *Open Charge Alliance* can already review the
 adoption of this proposal in *OCPP v2.1 Draft3 v0.53*. Non-Members have the opportunity
-to take part in an 60 day [public review ](https://openchargealliance.org/60-day-public-review-ocpp-2-1-draft/)
+to take part in a 60 day [public review ](https://openchargealliance.org/60-day-public-review-ocpp-2-1-draft/)
 before the final release of OCPP v2.1.
 
 ## Goals
